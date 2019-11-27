@@ -59,7 +59,7 @@ public class CommentController {
   @PostMapping("/new")
   @ResponseStatus(HttpStatus.CREATED)
   Comment newCommentByParams(@RequestBody CommentDTO newCommentDTO){
-    User creator = userRepository.findById(newCommentDTO.getIssueId()).orElseThrow(
+    User creator = userRepository.findById(newCommentDTO.getUserId()).orElseThrow(
         () -> new GenericException(HttpStatus.BAD_REQUEST,
             ExceptionMessages.ID_NOT_FOUND.getErrorMessage()));
     Issue issueCommented = issueRepository.findById(newCommentDTO.getIssueId()).orElseThrow(

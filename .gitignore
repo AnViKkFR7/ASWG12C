@@ -15,7 +15,7 @@
 
 # Generated files
 .idea/**/contentModel.xml
-.class
+
 # Sensitive or high-churn files
 .idea/**/dataSources/
 .idea/**/dataSources.ids
@@ -79,6 +79,7 @@ fabric.properties
 # modules.xml
 # .idea/misc.xml
 # *.ipr
+*.class
 
 # Sonarlint plugin
 .idea/**/sonarlint/
@@ -91,3 +92,4 @@ fabric.properties
 .idea/**/markdown-navigator/
 
 # End of https://www.gitignore.io/api/intellij
+.idea/
