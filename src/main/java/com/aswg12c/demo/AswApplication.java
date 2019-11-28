@@ -6,10 +6,15 @@ import org.springframework.boot.autoconfigure.security.oauth2.client.EnableOAuth
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.Console;
 import java.security.Principal;
 
 @EnableJpaRepositories
@@ -17,6 +22,8 @@ import java.security.Principal;
 @EnableOAuth2Sso
 @RestController
 public class AswApplication extends WebSecurityConfigurerAdapter {
+
+	public Principal mPrincipal;
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
@@ -34,7 +41,19 @@ public class AswApplication extends WebSecurityConfigurerAdapter {
 
 	@RequestMapping("/user")
 	public Principal user(Principal principal) {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		String currentPrincipalName = principal.getName();
 		return principal;
+	}
+
+	@GetMapping("/getuser")
+	public String getUser() {
+		String username;
+		if (mPrincipal instanceof UserDetails) {
+			username = ((UserDetails)mPrincipal).getUsername();
+		}
+		else username = mPrincipal.toString();
+		return username;
 	}
 
 	public static void main(String[] args) {
