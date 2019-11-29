@@ -61,7 +61,7 @@ public class AswApplication extends WebSecurityConfigurerAdapter {
 				.anyRequest()
 				.authenticated()
 				.and().logout().logoutSuccessUrl("/").permitAll()
-				.and().csrf().ignoringAntMatchers("/**");
+				.and().csrf().ignoringAntMatchers("/**", "/api/**");
 
 	}
 
