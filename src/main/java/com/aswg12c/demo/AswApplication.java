@@ -1,5 +1,15 @@
 package com.aswg12c.demo;
 
+import com.aswg12c.demo.model.User;
+import com.aswg12c.demo.repository.UserRepository;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import net.minidev.json.JSONObject;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.oauth2.client.EnableOAuth2Sso;
@@ -18,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.Console;
+import java.io.IOException;
 import java.security.Principal;
 import java.util.LinkedHashMap;
 
@@ -28,6 +39,9 @@ import java.util.LinkedHashMap;
 public class AswApplication extends WebSecurityConfigurerAdapter {
 
 	public String tokenValue;
+
+	@Autowired
+	private UserRepository userRepository;
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
@@ -48,7 +62,30 @@ public class AswApplication extends WebSecurityConfigurerAdapter {
 		Object t = authentication.getDetails();
 		OAuth2AuthenticationDetails details = (OAuth2AuthenticationDetails)t;
 		tokenValue = details.getTokenValue();
+		GetUserInfo();
 		return authentication;
+	}
+
+	private void GetUserInfo() {
+		String baseUrl = "https://graph.facebook.com/me?access_token=";
+		OkHttpClient client = new OkHttpClient();
+		Request request = new Request.Builder()
+				.url(baseUrl + tokenValue)
+				.get()
+				.build();
+		try (Response response = client.newCall(request).execute()) {
+			if (response.isSuccessful()) {
+				JsonObject json = new JsonParser().parse(response.body().string()).getAsJsonObject();
+				String name = json.get("name").getAsString();
+				String fbid = json.get("id").getAsString();
+				User newUser = new User(name, fbid, tokenValue);
+				userRepository.save(newUser);
+			} else {
+
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	@GetMapping("/getuser")
