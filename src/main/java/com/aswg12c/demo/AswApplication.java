@@ -61,7 +61,7 @@ public class AswApplication extends WebSecurityConfigurerAdapter {
 				.anyRequest()
 				.authenticated()
 				.and().logout().logoutSuccessUrl("/").permitAll()
-				.and().csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
+				.and().csrf().ignoringAntMatchers("/**");
 
 	}
 
@@ -104,7 +104,7 @@ public class AswApplication extends WebSecurityConfigurerAdapter {
 					Session newSession = new Session(userId, tokenValue, true);
 					sessionRepository.save(newSession);
 				} catch (Exception e) {
-					e.printStackTrace();
+					
 				}
 			} else {
 
