@@ -1,6 +1,9 @@
 package com.aswg12c.demo;
 
+import com.aswg12c.demo.controller.SessionController;
+import com.aswg12c.demo.model.Session;
 import com.aswg12c.demo.model.User;
+import com.aswg12c.demo.repository.SessionRepository;
 import com.aswg12c.demo.repository.UserRepository;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -24,6 +27,7 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -39,9 +43,13 @@ import java.util.LinkedHashMap;
 public class AswApplication extends WebSecurityConfigurerAdapter {
 
 	public String tokenValue;
+	public String userId;
 
 	@Autowired
 	private UserRepository userRepository;
+
+	@Autowired
+	private SessionRepository sessionRepository;
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
@@ -62,11 +70,18 @@ public class AswApplication extends WebSecurityConfigurerAdapter {
 		Object t = authentication.getDetails();
 		OAuth2AuthenticationDetails details = (OAuth2AuthenticationDetails)t;
 		tokenValue = details.getTokenValue();
-		GetUserInfo();
+		CreateUser();
 		return authentication;
 	}
 
-	private void GetUserInfo() {
+	@RequestMapping("/logout")
+	public void logout() {
+		sessionRepository.deleteByUserId(userId);
+		userId = "0";
+		tokenValue = "0";
+	}
+
+	private void CreateUser() {
 		String baseUrl = "https://graph.facebook.com/me?access_token=";
 		OkHttpClient client = new OkHttpClient();
 		Request request = new Request.Builder()
@@ -78,13 +93,24 @@ public class AswApplication extends WebSecurityConfigurerAdapter {
 				JsonObject json = new JsonParser().parse(response.body().string()).getAsJsonObject();
 				String name = json.get("name").getAsString();
 				String fbid = json.get("id").getAsString();
-				User newUser = new User(name, fbid, tokenValue);
-				userRepository.save(newUser);
+				userId = fbid;
+				try {
+					User newUser = new User(name, fbid, tokenValue);
+					userRepository.save(newUser);
+				} catch (Exception e) {
+
+				}
+				try {
+					Session newSession = new Session(userId, tokenValue, true);
+					sessionRepository.save(newSession);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			} else {
 
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+
 		}
 	}
 

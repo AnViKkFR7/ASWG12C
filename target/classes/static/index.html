@@ -44,6 +44,11 @@
             $(".unauthenticated").show();
             $(".authenticated").hide();
         });
+        $.get("/logout", function () {
+            $("#user").html('');
+            $(".unauthenticated").show();
+            $(".authenticated").hide();
+        });
         return true;
     }
     $.get("/user", function(data) {
