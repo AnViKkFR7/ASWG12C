@@ -30,4 +30,16 @@ public class Session {
     this.token = token;
     this.loggedIn = loggedIn;
   }
+
+  public Boolean getLoggedIn() {
+    return loggedIn;
+  }
+
+  public void setLoggedIn(Boolean loggedIn) {
+    this.loggedIn = loggedIn;
+  }
+
+  public String getUserId() {
+    return userId;
+  }
 }
