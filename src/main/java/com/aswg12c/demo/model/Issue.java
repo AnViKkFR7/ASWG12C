@@ -1,14 +1,17 @@
 package com.aswg12c.demo.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 @Entity
 @Table(name="issue")
@@ -18,12 +21,15 @@ public class Issue {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  @NotBlank
   private String title;
 
   private String description;
 
+  @NotNull
   private kindEnum kind;
 
+  @NotNull
   private priorityEnum priority;
 
   private statusEnum status;
@@ -32,9 +38,15 @@ public class Issue {
 
   private int watchers;
 
+  @NotNull
   private Date creationDate;
 
+  @NotNull
   private Date updatedDate;
+
+  @JsonIgnore
+  @Lob
+  private byte[] image;
 
   @ManyToOne
   @JoinColumn(name = "creator")
@@ -148,5 +160,13 @@ public class Issue {
 
   public void setId(Long id) {
     this.id = id;
+  }
+
+  public byte[] getImage() {
+    return image;
+  }
+
+  public void setImage(byte[] image) {
+    this.image = image;
   }
 }

@@ -4,15 +4,18 @@ public class IssueDTO {
   private String title;
   private kindEnum kind;
   private priorityEnum priority;
-  private Long userCreatorId;
+  private String description;
+  private statusEnum status;
+  private String comment;
 
   IssueDTO(){}
 
-  public IssueDTO(String title, kindEnum kind, priorityEnum priority, Long userCreatorId){
+  public IssueDTO(String title, kindEnum kind, priorityEnum priority, String description, String comment){
     this.title = title;
     this.kind = kind;
     this.priority = priority;
-    this.userCreatorId = userCreatorId;
+    this.description = description;
+    this.comment = comment;
   }
 
 
@@ -28,7 +31,19 @@ public class IssueDTO {
     return priority;
   }
 
-  public Long getUserCreatorId() {
-    return userCreatorId;
+  public String getDescription() {
+    return description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  public statusEnum getStatus() {
+    return status;
+  }
+
+  public String getComment() {
+    return comment;
   }
 }

@@ -31,13 +31,16 @@ public class Comment {
 
   private Date creationDate;
 
+  private boolean modifiable;
+
   Comment(){}
 
-  public Comment(String content, User creator, Issue issueCommented, Date creationDate){
+  public Comment(String content, User creator, Issue issueCommented, boolean modifiable){
     this.content = content;
-    this.creationDate = creationDate;
+    this.creationDate = new Date();
     this.creator = creator;
     this.issueCommented = issueCommented;
+    this.modifiable = modifiable;
   }
 
   /**
@@ -83,5 +86,9 @@ public class Comment {
 
   public void setId(Long id) {
     this.id = id;
+  }
+
+  public boolean isModifiable() {
+    return modifiable;
   }
 }

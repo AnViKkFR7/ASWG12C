@@ -9,5 +9,5 @@ package com.aswg12c.demo.repository;
 public interface UserRepository extends JpaRepository<User, Long> {
 
 
-
+  User findByFacebookId(String userId);
 }
