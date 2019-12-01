@@ -60,7 +60,7 @@ public class IssueController {
   @GetMapping("/{id}") //coger un issue con un id concreto
   Issue getIssue(@PathVariable Long id){
     return issueRepository.findById(id).orElseThrow(
-                    () -> new GenericException(HttpStatus.FORBIDDEN,
+                    () -> new GenericException(HttpStatus.NOT_FOUND,
                         ExceptionMessages.ID_NOT_FOUND.getErrorMessage()));
 
   }
@@ -151,7 +151,7 @@ public class IssueController {
     if (!actual_session.getLoggedIn()) throw new GenericException(HttpStatus.FORBIDDEN, "You are not logged in");
 
     Issue issueModified = issueRepository.findById(id).orElseThrow(
-        () -> new GenericException(HttpStatus.BAD_REQUEST,
+        () -> new GenericException(HttpStatus.NOT_FOUND,
         ExceptionMessages.ID_NOT_FOUND.getErrorMessage()));
     issueModified.setStatus(status);
     issueRepository.save(issueModified);
@@ -174,7 +174,7 @@ public class IssueController {
     }
 
     Issue actual_issue = issueRepository.findById(id).orElseThrow(
-        () -> new GenericException(HttpStatus.BAD_REQUEST,
+        () -> new GenericException(HttpStatus.NOT_FOUND,
         ExceptionMessages.ID_NOT_FOUND.getErrorMessage()));
 
     if (actual_issue.getCreator().getFacebookToken().equals(facebook_token)) {
@@ -212,7 +212,7 @@ public class IssueController {
       issueRepository.save(actual_issue);
       return actual_issue;
     }
-    else throw new GenericException(HttpStatus.FORBIDDEN, "You can not edit an issue that not belongs to you");
+    else throw new GenericException(HttpStatus.FORBIDDEN, "You can not edit an issue that does not belongs to you");
   }
 
   @DeleteMapping("{id}")
@@ -222,7 +222,7 @@ public class IssueController {
     if (!actual_session.getLoggedIn()) throw new GenericException(HttpStatus.FORBIDDEN, "You are not logged in");
 
     Issue actual_issue = issueRepository.findById(id).orElseThrow(
-        () -> new GenericException(HttpStatus.BAD_REQUEST,
+        () -> new GenericException(HttpStatus.NOT_FOUND,
         ExceptionMessages.ID_NOT_FOUND.getErrorMessage()));
 
     if (actual_issue.getCreator().getFacebookToken().equals(facebook_token)) {
@@ -253,7 +253,7 @@ public class IssueController {
   @GetMapping("{id}/comments")
   List<Comment> getCommentsFromAnIssue(@PathVariable Long id){
     Issue issue = issueRepository.findById(id).orElseThrow(
-        () -> new GenericException(HttpStatus.BAD_REQUEST,
+        () -> new GenericException(HttpStatus.NOT_FOUND,
             ExceptionMessages.ID_NOT_FOUND.getErrorMessage()));
     return commentRepository.findByIssueCommented(issue);
   }
@@ -266,7 +266,7 @@ public class IssueController {
     if (!actual_session.getLoggedIn()) throw new GenericException(HttpStatus.FORBIDDEN, "You are not logged in");
 
     Issue actual_issue = issueRepository.findById(id).orElseThrow(
-        () -> new GenericException(HttpStatus.BAD_REQUEST,
+        () -> new GenericException(HttpStatus.NOT_FOUND,
             ExceptionMessages.ID_NOT_FOUND.getErrorMessage()));
 
     //añadir la imagen y guardarla en la db
@@ -287,12 +287,12 @@ public class IssueController {
   @GetMapping("{id}/attachment")
   ResponseEntity<byte[]> getAttachment(@PathVariable Long id) {
     Issue actual_issue = issueRepository.findById(id)
-        .orElseThrow(() -> new GenericException(HttpStatus.BAD_REQUEST, ExceptionMessages.ID_NOT_FOUND.getErrorMessage()));
+        .orElseThrow(() -> new GenericException(HttpStatus.NOT_FOUND, ExceptionMessages.ID_NOT_FOUND.getErrorMessage()));
     if(actual_issue.getImage() != null) {
       byte[] imageBytes = actual_issue.getImage();
       return new ResponseEntity<>(imageBytes, HttpStatus.OK);
     }
-    else throw new GenericException(HttpStatus.BAD_REQUEST, "Issue has no attachment");
+    else throw new GenericException(HttpStatus.NOT_FOUND, "Issue has no attachment");
   }
 
   /**

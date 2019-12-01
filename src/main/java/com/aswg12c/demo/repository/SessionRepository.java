@@ -11,5 +11,8 @@ public interface SessionRepository extends JpaRepository<Session, Long> {
     @Transactional
     void deleteByUserId(String userId);
 
+    @Transactional
+    void deleteByToken(String token);
+
     Session findByToken(String token);
 }

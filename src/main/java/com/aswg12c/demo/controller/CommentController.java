@@ -47,8 +47,8 @@ public class CommentController {
   @GetMapping("{id}") //coger un issue con un id concreto
   Comment getComment(@PathVariable Long id){
     return commentRepository.findById(id).orElseThrow(
-        () -> new GenericException(HttpStatus.BAD_REQUEST,
-            ExceptionMessages.ID_NOT_FOUND.getErrorMessage()));
+        () -> new GenericException(HttpStatus.NOT_FOUND,
+            ExceptionMessages.COMMENT_ID_NOT_FOUND.getErrorMessage()));
   }
 
   @PostMapping("/newComment")
@@ -61,11 +61,11 @@ public class CommentController {
     User creator = userRepository.findByFacebookId(actual_session.getUserId());
 
     if (creator == null) {
-      throw new GenericException(HttpStatus.BAD_REQUEST, ExceptionMessages.ID_NOT_FOUND.getErrorMessage());
+      throw new GenericException(HttpStatus.NOT_FOUND, ExceptionMessages.COMMENT_ID_NOT_FOUND.getErrorMessage());
     }
 
     Issue issueCommented = issueRepository.findById(newCommentDTO.getIssueId()).orElseThrow(
-        () -> new GenericException(HttpStatus.BAD_REQUEST,
+        () -> new GenericException(HttpStatus.NOT_FOUND,
             ExceptionMessages.ID_NOT_FOUND.getErrorMessage()));
 
     Comment newComment = new Comment(newCommentDTO.getContent(), creator, issueCommented, true);
@@ -78,8 +78,8 @@ public class CommentController {
   void deleteComment(@PathVariable Long id, @RequestParam(name = "token") String facebook_token){
 
     Comment actual_comment = commentRepository.findById(id).orElseThrow(
-        () -> new GenericException(HttpStatus.BAD_REQUEST,
-            ExceptionMessages.ID_NOT_FOUND.getErrorMessage()));
+        () -> new GenericException(HttpStatus.NOT_FOUND,
+            ExceptionMessages.COMMENT_ID_NOT_FOUND.getErrorMessage()));
     if (actual_comment.getIssueCommented().getCreator().getFacebookToken().equals(facebook_token)) {
       commentRepository.deleteById(id);
     }
@@ -95,8 +95,8 @@ public class CommentController {
     }
     //comprobar que el comentario existe
     Comment old_comment = commentRepository.findById(id).orElseThrow(
-        () -> new GenericException(HttpStatus.BAD_REQUEST,
-            ExceptionMessages.ID_NOT_FOUND.getErrorMessage()));
+        () -> new GenericException(HttpStatus.NOT_FOUND,
+            ExceptionMessages.COMMENT_ID_NOT_FOUND.getErrorMessage()));
     //comprobar que no edite el comentario otro usuario
     if (old_comment.getCreator() != commentEdited.getCreator()) {
       throw new GenericException(HttpStatus.FORBIDDEN,

@@ -5,6 +5,7 @@ public enum ExceptionMessages {
   USERNAME_IN_USE("This username is already in use"),
   INVALID_CREDENTIALS("Credentials are not correct. Try again"),
   ID_NOT_FOUND("There is no issue with that id"),
+  COMMENT_ID_NOT_FOUND("There is no comment with that id"),
   NOT_ALL_PARAMETERS("You must complete all the required fields"),
   NOT_VALID_EMAIL("This email adress is not valid"),
   CONTENT_NOT_FOUND("This comment does not contain any text"),

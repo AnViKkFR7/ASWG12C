@@ -29,7 +29,7 @@ public class SessionController {
 
     if (actual_session == null) throw new GenericException(HttpStatus.BAD_REQUEST, "There is no session with that token");
 
-    if (actual_session.getLoggedIn()) actual_session.setLoggedIn(false);
+    if (actual_session.getLoggedIn()) sessionRepository.deleteByUserId(actual_session.getUserId());
     else throw new GenericException(HttpStatus.BAD_REQUEST, "This user is already logged out");
   }
 }
