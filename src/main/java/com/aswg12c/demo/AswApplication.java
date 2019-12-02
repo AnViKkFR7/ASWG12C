@@ -70,12 +70,8 @@ public class AswApplication extends WebSecurityConfigurerAdapter {
 				.and().csrf().ignoringAntMatchers("/**", "/api/**");
 
 	}
-	
-	//Aquesta operació crec que es redundant - Isma
-	//@RequestMapping("/user")
-	//Coses del swagger
-	//@ApiOperation(value = "Returns current user")
-	//End of swagger
+
+	@RequestMapping("/user")
 	public Authentication user(Authentication authentication) {
 		Object t = authentication.getDetails();
 		OAuth2AuthenticationDetails details = (OAuth2AuthenticationDetails)t;
@@ -84,10 +80,7 @@ public class AswApplication extends WebSecurityConfigurerAdapter {
 		return authentication;
 	}
 	
-	//Coses del swagger
-	@ApiOperation(value = "Logs out current user")
-	//End of swagger
-	@PostMapping("/logout")
+	@RequestMapping("/logout")
 	public void logout() {
 		sessionRepository.deleteByUserId(userId);
 		userId = "0";
