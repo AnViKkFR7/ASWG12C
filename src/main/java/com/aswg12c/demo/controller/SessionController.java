@@ -22,8 +22,10 @@ public class SessionController {
   @Autowired
   private SessionRepository sessionRepository;
 
+  /* Este està repetido en el AswApplication, queda oculto
   @PutMapping("/logout")
   @ResponseStatus(HttpStatus.OK)
+  */
   void logOut(@RequestParam(name = "token") String facebook_token){
     Session actual_session = sessionRepository.findByToken(facebook_token);
 

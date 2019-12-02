@@ -11,6 +11,10 @@ import com.aswg12c.demo.repository.CommentRepository;
 import com.aswg12c.demo.repository.IssueRepository;
 import com.aswg12c.demo.repository.SessionRepository;
 import com.aswg12c.demo.repository.UserRepository;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+
 import java.util.Date;
 import java.util.List;
 import javax.validation.Valid;
@@ -29,6 +33,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api" + CommentController.PATH)
+//Coses del swagger
+@Api(value = "Comentaris", description = "Comment operations")
+//End of swagger
 public class CommentController {
   public static final String PATH = "/comments";
 
@@ -45,13 +52,19 @@ public class CommentController {
   private SessionRepository sessionRepository;
 
   @GetMapping("{id}") //coger un issue con un id concreto
+//Coses del swagger
+  @ApiOperation(value = "Get a comment by id")
+  //End of swagger
   Comment getComment(@PathVariable Long id){
     return commentRepository.findById(id).orElseThrow(
         () -> new GenericException(HttpStatus.NOT_FOUND,
             ExceptionMessages.COMMENT_ID_NOT_FOUND.getErrorMessage()));
   }
-
-  @PostMapping("/newComment")
+  
+  //Coses del swagger
+  @ApiOperation(value = "Create a new comment")
+  //End of swagger
+  @PostMapping("/new")
   @ResponseStatus(HttpStatus.CREATED)
   Comment newCommentByParams(@RequestBody CommentDTO newCommentDTO, @RequestParam(name = "token") String facebook_token){
     Session actual_session = sessionRepository.findByToken(facebook_token);
@@ -75,6 +88,9 @@ public class CommentController {
 
   @DeleteMapping("{id}")
   @ResponseStatus(HttpStatus.OK)
+//Coses del swagger
+  @ApiOperation(value = "Delete a comment")
+  //End of swagger
   void deleteComment(@PathVariable Long id, @RequestParam(name = "token") String facebook_token){
 
     Comment actual_comment = commentRepository.findById(id).orElseThrow(
@@ -88,6 +104,9 @@ public class CommentController {
 
   @PutMapping("{id}")
   @ResponseStatus(HttpStatus.OK)
+  //Coses del swagger
+  @ApiOperation(value = "Edit a comment")
+  //End of swagger
   Comment editComment(@PathVariable Long id, @RequestBody Comment commentEdited){
     if (commentEdited.getContent().isEmpty()){
       throw new GenericException(HttpStatus.BAD_REQUEST,
