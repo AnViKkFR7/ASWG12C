@@ -2,6 +2,7 @@ package com.aswg12c.demo.controller;
 
 import com.aswg12c.demo.exceptions.ExceptionMessages;
 import com.aswg12c.demo.exceptions.GenericException;
+import com.aswg12c.demo.model.Attachment;
 import com.aswg12c.demo.model.Comment;
 import com.aswg12c.demo.model.Issue;
 import com.aswg12c.demo.model.IssueDTO;
@@ -11,6 +12,7 @@ import com.aswg12c.demo.model.kindEnum;
 import com.aswg12c.demo.model.priorityEnum;
 import com.aswg12c.demo.model.sortEnum;
 import com.aswg12c.demo.model.statusEnum;
+import com.aswg12c.demo.repository.AttachmentRepository;
 import com.aswg12c.demo.repository.CommentRepository;
 import com.aswg12c.demo.repository.IssueRepository;
 import com.aswg12c.demo.repository.SessionRepository;
@@ -63,6 +65,9 @@ public class IssueController {
 
   @Autowired
   private UserRepository userRepository;
+
+  @Autowired
+  private AttachmentRepository attachmentRepository;
 
   @GetMapping("/{id}") //coger un issue con un id concreto
   //Coses del swagger
@@ -251,12 +256,19 @@ public class IssueController {
         ExceptionMessages.ID_NOT_FOUND.getErrorMessage()));
 
     if (actual_issue.getCreator().getFacebookToken().equals(facebook_token)) {
+      //delete al comments from issue
       List<Comment> comments_from_issue = commentRepository.findByIssueCommented(actual_issue);
       for (Comment next : comments_from_issue){
         commentRepository.deleteById(next.getId());
       }
+
+      //delete al attachments from issue
+      List<Attachment> attachments_from_issue = attachmentRepository.findByIssue(actual_issue);
+      for (Attachment next : attachments_from_issue) attachmentRepository.deleteById(next.getId());
+
       issueRepository.deleteById(id);
     }
+
     else throw new GenericException(HttpStatus.FORBIDDEN, "Only the creator of the issue can delete it");
   }
 
@@ -310,8 +322,9 @@ public class IssueController {
             ExceptionMessages.ID_NOT_FOUND.getErrorMessage()));
 
     //añadir la imagen y guardarla en la db
-    actual_issue.setImage(attachment.getBytes());
-    System.out.println(attachment.getBytes());
+    if (attachmentRepository.existsByNom(attachment.getOriginalFilename())) throw new GenericException(HttpStatus.BAD_REQUEST, "This attachment already exists.");
+    Attachment new_attachment = new Attachment(attachment.getBytes(), attachment.getOriginalFilename(), actual_issue);
+    attachmentRepository.save(new_attachment);
     actual_issue.setUpdatedDate(new Date());
     actual_issue.setWatchers(actual_issue.getWatchers() + 1);
     issueRepository.save(actual_issue);
@@ -323,18 +336,99 @@ public class IssueController {
 
     return actual_issue;
   }
-//Coses del swagger
-  @ApiOperation(value = "Get current attachment (if it has any)")
+
+  //Coses del swagger
+  @ApiOperation(value = "Get current attachment by name")
   //End of swagger
   @GetMapping("{id}/attachment")
-  ResponseEntity<byte[]> getAttachment(@PathVariable Long id) {
+  ResponseEntity<byte[]> getAttachment(@PathVariable Long id, @RequestParam(name = "name") String att_name) {
     Issue actual_issue = issueRepository.findById(id)
         .orElseThrow(() -> new GenericException(HttpStatus.NOT_FOUND, ExceptionMessages.ID_NOT_FOUND.getErrorMessage()));
-    if(actual_issue.getImage() != null) {
-      byte[] imageBytes = actual_issue.getImage();
+
+    if (attachmentRepository.existsByNom(att_name)){
+      Attachment actual_attachment = attachmentRepository.findByNom(att_name);
+      byte[] imageBytes = actual_attachment.getAttachment();
       return new ResponseEntity<>(imageBytes, HttpStatus.OK);
     }
     else throw new GenericException(HttpStatus.NOT_FOUND, "Issue has no attachment");
+  }
+
+  @DeleteMapping("{id}/attachment")
+  void deleteAttachment(@PathVariable Long id, @RequestParam(name = "token") String facebook_token, @RequestBody String att_name){
+    Session actual_session = sessionRepository.findByToken(facebook_token);
+    if (actual_session == null) throw new GenericException(HttpStatus.FORBIDDEN, "There is no session with that token");
+    if (!actual_session.getLoggedIn()) throw new GenericException(HttpStatus.FORBIDDEN, "You are not logged in");
+
+
+    Issue actual_issue = issueRepository.findById(id).orElseThrow(
+        () -> new GenericException(HttpStatus.NOT_FOUND,
+            ExceptionMessages.ID_NOT_FOUND.getErrorMessage()));
+    if (actual_issue.getCreator().getFacebookToken().equals(facebook_token)){
+      if (!attachmentRepository.existsByNom(att_name)) throw new GenericException(HttpStatus.BAD_REQUEST, "There is no attachment with that name");
+      attachmentRepository.deleteByNom(att_name);
+    }
+    else throw new GenericException(HttpStatus.BAD_REQUEST, "You can not delete an attachment from a issue that is not yours.");
+  }
+
+  //Coses del swagger
+  @ApiOperation(value = "Get current watchers")
+  //End of swagger
+  @GetMapping("{id}/watchs")
+  int getWatchers(@PathVariable Long id){
+    Issue actual_issue = issueRepository.findById(id).orElseThrow(
+        () -> new GenericException(HttpStatus.NOT_FOUND,
+            ExceptionMessages.ID_NOT_FOUND.getErrorMessage()));
+
+    return actual_issue.getWatchers();
+  }
+
+  //Coses del swagger
+  @ApiOperation(value = "Get current votes")
+  //End of swagger
+  @GetMapping("{id}/votes")
+  int getVotes(@PathVariable Long id){
+    Issue actual_issue = issueRepository.findById(id).orElseThrow(
+        () -> new GenericException(HttpStatus.NOT_FOUND,
+            ExceptionMessages.ID_NOT_FOUND.getErrorMessage()));
+
+    return actual_issue.getVotes();
+  }
+
+  //Coses del swagger
+  @ApiOperation(value = "watch an issue")
+  //End of swagger
+  @PutMapping("{id}/watchs")
+  Issue watchIssue(@PathVariable Long id, @RequestParam(name = "token") String facebook_token){
+    Session actual_session = sessionRepository.findByToken(facebook_token);
+    if (actual_session == null) throw new GenericException(HttpStatus.FORBIDDEN, "There is no session with that token");
+    if (!actual_session.getLoggedIn()) throw new GenericException(HttpStatus.FORBIDDEN, "You are not logged in");
+
+    Issue actual_issue = issueRepository.findById(id).orElseThrow(
+        () -> new GenericException(HttpStatus.NOT_FOUND,
+            ExceptionMessages.ID_NOT_FOUND.getErrorMessage()));
+
+    actual_issue.setWatchers(actual_issue.getWatchers() + 1);
+    issueRepository.save(actual_issue);
+    return actual_issue;
+  }
+
+  //Coses del swagger
+  @ApiOperation(value = "vote an issue")
+  //End of swagger
+  @PutMapping("{id}/votes")
+  Issue voteIssue(@PathVariable Long id, @RequestParam(name = "token") String facebook_token){
+    Session actual_session = sessionRepository.findByToken(facebook_token);
+    if (actual_session == null) throw new GenericException(HttpStatus.FORBIDDEN, "There is no session with that token");
+    if (!actual_session.getLoggedIn()) throw new GenericException(HttpStatus.FORBIDDEN, "You are not logged in");
+
+    Issue actual_issue = issueRepository.findById(id).orElseThrow(
+        () -> new GenericException(HttpStatus.NOT_FOUND,
+            ExceptionMessages.ID_NOT_FOUND.getErrorMessage()));
+
+    actual_issue.setVotes(actual_issue.getVotes() + 1);
+    actual_issue.setWatchers(actual_issue.getWatchers() + 1);
+    issueRepository.save(actual_issue);
+    return actual_issue;
   }
 
   /**

@@ -26,6 +26,7 @@ public class SessionController {
   @PutMapping("/logout")
   @ResponseStatus(HttpStatus.OK)
   */
+  /*
   void logOut(@RequestParam(name = "token") String facebook_token){
     Session actual_session = sessionRepository.findByToken(facebook_token);
 
@@ -34,4 +35,6 @@ public class SessionController {
     if (actual_session.getLoggedIn()) sessionRepository.deleteByUserId(actual_session.getUserId());
     else throw new GenericException(HttpStatus.BAD_REQUEST, "This user is already logged out");
   }
+
+   */
 }

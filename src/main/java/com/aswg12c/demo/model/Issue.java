@@ -1,7 +1,10 @@
 package com.aswg12c.demo.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -9,6 +12,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -43,10 +47,6 @@ public class Issue {
 
   @NotNull
   private Date updatedDate;
-
-  @JsonIgnore
-  @Lob
-  private byte[] image;
 
   @ManyToOne
   @JoinColumn(name = "creator")
@@ -162,11 +162,4 @@ public class Issue {
     this.id = id;
   }
 
-  public byte[] getImage() {
-    return image;
-  }
-
-  public void setImage(byte[] image) {
-    this.image = image;
-  }
 }
