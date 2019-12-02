@@ -8,6 +8,9 @@ import com.aswg12c.demo.repository.UserRepository;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import net.minidev.json.JSONObject;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -40,6 +43,9 @@ import java.util.LinkedHashMap;
 @SpringBootApplication
 @EnableOAuth2Sso
 @RestController
+//Coses del swagger
+@Api(value = "Usuaris", description = "Session operations")
+//End of swagger
 public class AswApplication extends WebSecurityConfigurerAdapter {
 
 	public String tokenValue;
@@ -64,8 +70,12 @@ public class AswApplication extends WebSecurityConfigurerAdapter {
 				.and().csrf().ignoringAntMatchers("/**", "/api/**");
 
 	}
-
-	@RequestMapping("/user")
+	
+	//Aquesta operació crec que es redundant - Isma
+	//@RequestMapping("/user")
+	//Coses del swagger
+	//@ApiOperation(value = "Returns current user")
+	//End of swagger
 	public Authentication user(Authentication authentication) {
 		Object t = authentication.getDetails();
 		OAuth2AuthenticationDetails details = (OAuth2AuthenticationDetails)t;
@@ -73,8 +83,11 @@ public class AswApplication extends WebSecurityConfigurerAdapter {
 		CreateUser();
 		return authentication;
 	}
-
-	@RequestMapping("/logout")
+	
+	//Coses del swagger
+	@ApiOperation(value = "Logs out current user")
+	//End of swagger
+	@PostMapping("/logout")
 	public void logout() {
 		sessionRepository.deleteByUserId(userId);
 		userId = "0";
@@ -121,8 +134,10 @@ public class AswApplication extends WebSecurityConfigurerAdapter {
 
 		}
 	}
-
-	@GetMapping("/getuser")
+	//Coses del swagger
+	@ApiOperation(value = "Returns current user autentication token")
+	//End of swagger
+	@GetMapping("/usertoken")
 	public String getUser() {
 		return tokenValue;
 	}

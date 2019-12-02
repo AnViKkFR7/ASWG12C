@@ -15,6 +15,10 @@ import com.aswg12c.demo.repository.CommentRepository;
 import com.aswg12c.demo.repository.IssueRepository;
 import com.aswg12c.demo.repository.SessionRepository;
 import com.aswg12c.demo.repository.UserRepository;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -42,6 +46,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api" + IssueController.PATH)
+//Coses del swagger
+@Api(value = "Create a new comment", description = "Issue operations")
+//End of swagger
 public class IssueController {
   public static final String PATH = "/issues";
 
@@ -58,6 +65,9 @@ public class IssueController {
   private UserRepository userRepository;
 
   @GetMapping("/{id}") //coger un issue con un id concreto
+  //Coses del swagger
+  @ApiOperation(value = "Get issue by id")
+  //End of swagger
   Issue getIssue(@PathVariable Long id){
     return issueRepository.findById(id).orElseThrow(
                     () -> new GenericException(HttpStatus.NOT_FOUND,
@@ -68,6 +78,9 @@ public class IssueController {
   //los select son el get de cuando le clicas en el tipo de issue en la tabla y te salen solo los de ese tipo (es acumulativo).
   //los order son de cuando le das en la tabla a ordenarlos según el tipo.
   @GetMapping()
+  //Coses del swagger
+  @ApiOperation(value = "Get issues by keyword and sorted by keyword")
+  //End of swagger
   List<Issue> getIssuesBy(
       @RequestParam(name = "selectStatus", required = false) statusEnum selectStatus,
       @RequestParam(name = "selectPriority", required = false) priorityEnum selectPriority,
@@ -124,7 +137,10 @@ public class IssueController {
     return issues;
   }
 
-  @PostMapping()
+  @PostMapping("/new")
+  //Coses del swagger
+  @ApiOperation(value = "Create a new issue")
+  //End of swagger
   @ResponseStatus(HttpStatus.CREATED)
   Issue newIssue(@Valid @RequestBody IssueDTO createNewIssue, @RequestParam(name = "token") String facebook_token){
     if (createNewIssue.getKind() == null || createNewIssue.getPriority() == null || createNewIssue.getTitle() == null){
@@ -143,7 +159,10 @@ public class IssueController {
     return new_issue;
   }
 
-  @PutMapping("{id}")
+  @PutMapping("{id}/workflow")
+  //Coses del swagger
+  @ApiOperation(value = "Edit workflow of an issue")
+  //End of swagger
   Issue workflow(@PathVariable Long id, @RequestParam(name = "token") String facebook_token,
       @RequestBody statusEnum status, String comment){
     Session actual_session = sessionRepository.findByToken(facebook_token);
@@ -161,7 +180,10 @@ public class IssueController {
     return issueModified;
   }
 
-  @PutMapping("{id}/edit")
+  @PutMapping("{id}")
+//Coses del swagger
+  @ApiOperation(value = "Edit an issue")
+  //End of swagger
   Issue editIssue(@PathVariable Long id, @RequestParam(name = "token") String facebook_token, @RequestBody IssueDTO issueEdited){
     Session actual_session = sessionRepository.findByToken(facebook_token);
     if (actual_session == null) throw new GenericException(HttpStatus.FORBIDDEN, "There is no session with that token");
@@ -216,6 +238,9 @@ public class IssueController {
   }
 
   @DeleteMapping("{id}")
+//Coses del swagger
+  @ApiOperation(value = "Delete an issue")
+  //End of swagger
   void deleteIssue(@PathVariable Long id, @RequestParam(name = "token") String facebook_token){
     Session actual_session = sessionRepository.findByToken(facebook_token);
     if (actual_session == null) throw new GenericException(HttpStatus.FORBIDDEN, "There is no session with that token");
@@ -235,21 +260,33 @@ public class IssueController {
     else throw new GenericException(HttpStatus.FORBIDDEN, "Only the creator of the issue can delete it");
   }
 
-  @GetMapping("/kindEnum")
+  @GetMapping("/types")
+//Coses del swagger
+  @ApiOperation(value = "Get all possible types of issues")
+  //End of swagger
   kindEnum[] getKindEnumValues(){
     return kindEnum.values();
   }
 
-  @GetMapping("/statusEnum")
+  @GetMapping("/status")
+//Coses del swagger
+  @ApiOperation(value = "Get all possible status of issues")
+  //End of swagger
   statusEnum[] getStatusEnumValues(){
     return statusEnum.values();
   }
 
-  @GetMapping("/priorityEnum")
+//Coses del swagger
+  @ApiOperation(value = "Get all possible priorities of issues")
+  //End of swagger
+  @GetMapping("/priorities")
   priorityEnum[] getPriorityEnumValues(){
     return priorityEnum.values();
   }
-
+  
+//Coses del swagger
+  @ApiOperation(value = "Get comments of an issue")
+  //End of swagger
   @GetMapping("{id}/comments")
   List<Comment> getCommentsFromAnIssue(@PathVariable Long id){
     Issue issue = issueRepository.findById(id).orElseThrow(
@@ -257,9 +294,12 @@ public class IssueController {
             ExceptionMessages.ID_NOT_FOUND.getErrorMessage()));
     return commentRepository.findByIssueCommented(issue);
   }
-
-  @PutMapping("{id}/attachment")
+  
+  @PutMapping("{id}/attachment/new")
   @ResponseStatus(HttpStatus.ACCEPTED)
+//Coses del swagger
+  @ApiOperation(value = "Add an attachment to an issue")
+  //End of swagger
   Issue addAttachment(@PathVariable Long id, @RequestParam(name = "token") String facebook_token, @RequestBody(required = false) String comment, @RequestParam("attachment") MultipartFile attachment) throws IOException {
     Session actual_session = sessionRepository.findByToken(facebook_token);
     if (actual_session == null) throw new GenericException(HttpStatus.FORBIDDEN, "There is no session with that token");
@@ -283,7 +323,9 @@ public class IssueController {
 
     return actual_issue;
   }
-
+//Coses del swagger
+  @ApiOperation(value = "Get current attachment (if it has any)")
+  //End of swagger
   @GetMapping("{id}/attachment")
   ResponseEntity<byte[]> getAttachment(@PathVariable Long id) {
     Issue actual_issue = issueRepository.findById(id)
