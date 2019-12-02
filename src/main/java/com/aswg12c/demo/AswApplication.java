@@ -108,12 +108,20 @@ public class AswApplication extends WebSecurityConfigurerAdapter {
 				String fbid = json.get("id").getAsString();
 				userId = fbid;
 				try {
-					User newUser = new User(name, fbid, tokenValue);
-					userRepository.save(newUser);
+					User oldUser = userRepository.findByFacebookId(userId);
+					if (oldUser == null) {
+						User newUser = new User(name, fbid, tokenValue);
+						userRepository.save(newUser);
+					}
+					else {
+						oldUser.setFacebookToken(tokenValue);
+						userRepository.save(oldUser);
+					}
 				} catch (Exception e) {
 
 				}
 				try {
+					sessionRepository.deleteByUserId(userId);
 					Session newSession = new Session(userId, tokenValue, true);
 					sessionRepository.save(newSession);
 				} catch (Exception e) {
