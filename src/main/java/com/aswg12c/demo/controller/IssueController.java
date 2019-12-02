@@ -295,7 +295,7 @@ public class IssueController {
     return commentRepository.findByIssueCommented(issue);
   }
   
-  @PutMapping("{id}/attachment/new")
+  @PutMapping("{id}/attachments/new")
   @ResponseStatus(HttpStatus.ACCEPTED)
 //Coses del swagger
   @ApiOperation(value = "Add an attachment to an issue")
@@ -310,7 +310,7 @@ public class IssueController {
             ExceptionMessages.ID_NOT_FOUND.getErrorMessage()));
 
     //añadir la imagen y guardarla en la db
-    actual_issue.setImage(attachment.getBytes());
+    actual_issue.addAttachment(attachment.getBytes());
     System.out.println(attachment.getBytes());
     actual_issue.setUpdatedDate(new Date());
     actual_issue.setWatchers(actual_issue.getWatchers() + 1);
@@ -323,18 +323,33 @@ public class IssueController {
 
     return actual_issue;
   }
-//Coses del swagger
-  @ApiOperation(value = "Get current attachment (if it has any)")
+  //Coses del swagger
+  @ApiOperation(value = "Get attachment by id")
   //End of swagger
-  @GetMapping("{id}/attachment")
-  ResponseEntity<byte[]> getAttachment(@PathVariable Long id) {
+  @GetMapping("{id}/attachments/{id_att}")
+  ResponseEntity<byte[]> getAttachmentById(@PathVariable Long id, @PathVariable Integer id_att) {
     Issue actual_issue = issueRepository.findById(id)
         .orElseThrow(() -> new GenericException(HttpStatus.NOT_FOUND, ExceptionMessages.ID_NOT_FOUND.getErrorMessage()));
-    if(actual_issue.getImage() != null) {
-      byte[] imageBytes = actual_issue.getImage();
-      return new ResponseEntity<>(imageBytes, HttpStatus.OK);
+    if(actual_issue.getAttachments() != null) {
+      byte[] attachment = actual_issue.getAttachment(id_att);
+      return new ResponseEntity<>(attachment, HttpStatus.OK);
     }
-    else throw new GenericException(HttpStatus.NOT_FOUND, "Issue has no attachment");
+    else throw new GenericException(HttpStatus.NOT_FOUND, "Issue has no attachment with id = " + id_att.toString());
+  }
+  
+//Coses del swagger
+  @ApiOperation(value = "Get all attachments")
+  //End of swagger
+  @GetMapping("{id}/attachments")
+  ResponseEntity<byte[]> getAttachments(@PathVariable Long id, @PathVariable Integer id_att) {
+    Issue actual_issue = issueRepository.findById(id)
+        .orElseThrow(() -> new GenericException(HttpStatus.NOT_FOUND, ExceptionMessages.ID_NOT_FOUND.getErrorMessage()));
+    if(actual_issue.getAttachments() != null) {
+      byte[][] attachments = actual_issue.getAttachments();
+      //COMO DEVUELVO UN BYTE[][]?
+      return new ResponseEntity<>(attachments, HttpStatus.OK);
+    }
+    else throw new GenericException(HttpStatus.NOT_FOUND, "Issue has no attachment with id = " + id_att.toString());
   }
 
   /**

@@ -1,6 +1,13 @@
 package com.aswg12c.demo.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -44,9 +51,10 @@ public class Issue {
   @NotNull
   private Date updatedDate;
 
+  
   @JsonIgnore
   @Lob
-  private byte[] image;
+  private ArrayList<byte[]> attachments;
 
   @ManyToOne
   @JoinColumn(name = "creator")
@@ -162,11 +170,38 @@ public class Issue {
     this.id = id;
   }
 
-  public byte[] getImage() {
-    return image;
+  public byte[][] getAttachments() {  
+    return convertToByteArray(attachments);
   }
 
-  public void setImage(byte[] image) {
-    this.image = image;
+  private byte[][] convertToByteArray(ArrayList<byte[]> atts) {
+	  // write to byte array
+	  byte[][] bArr = new byte[atts.size()][];
+	  int count = 0;
+	  for (byte[] att : atts) {
+		 bArr[count] = att;
+		 count++;
+	  }
+	  return bArr;
+  }
+
+public void setAttachments(ArrayList<byte[]> att) {
+    this.attachments = att;
+  }
+  
+  public void addAttachment(byte[] at) {
+	this.attachments.add(at);  
+  }
+  
+  public byte[] getAttachment(int id) {
+	  return this.attachments.get(id);
+  }
+  
+  public boolean deleteAttachment(int id) {
+	return false;  
+  }
+  
+  public byte[] getAttachmentById(int id) {
+	  return this.attachments.get(id);
   }
 }
