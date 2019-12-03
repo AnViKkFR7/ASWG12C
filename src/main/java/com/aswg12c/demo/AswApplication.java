@@ -15,6 +15,8 @@ import net.minidev.json.JSONObject;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import springfox.documentation.annotations.ApiIgnore;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -44,7 +46,8 @@ import java.util.LinkedHashMap;
 @EnableOAuth2Sso
 @RestController
 //Coses del swagger
-@Api(value = "Usuaris", description = "Session operations")
+@ApiIgnore
+//(value = "Usuaris", description = "Session operations")
 //End of swagger
 public class AswApplication extends WebSecurityConfigurerAdapter {
 
@@ -70,12 +73,8 @@ public class AswApplication extends WebSecurityConfigurerAdapter {
 				.and().csrf().ignoringAntMatchers("/**", "/api/**");
 
 	}
-	
-	//Aquesta operació crec que es redundant - Isma
-	//@RequestMapping("/user")
-	//Coses del swagger
-	//@ApiOperation(value = "Returns current user")
-	//End of swagger
+
+	@RequestMapping("/user")
 	public Authentication user(Authentication authentication) {
 		Object t = authentication.getDetails();
 		OAuth2AuthenticationDetails details = (OAuth2AuthenticationDetails)t;
@@ -84,10 +83,7 @@ public class AswApplication extends WebSecurityConfigurerAdapter {
 		return authentication;
 	}
 	
-	//Coses del swagger
-	@ApiOperation(value = "Logs out current user")
-	//End of swagger
-	@PostMapping("/logout")
+	@RequestMapping("/logout")
 	public void logout() {
 		sessionRepository.deleteByUserId(userId);
 		userId = "0";

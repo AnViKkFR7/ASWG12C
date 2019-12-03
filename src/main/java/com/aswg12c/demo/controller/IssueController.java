@@ -352,7 +352,9 @@ public class IssueController {
     }
     else throw new GenericException(HttpStatus.NOT_FOUND, "Issue has no attachment");
   }
-
+  //Coses del swagger
+  @ApiOperation(value = "Delete attachment")
+  //End of swagger
   @DeleteMapping("{id}/attachment")
   void deleteAttachment(@PathVariable Long id, @RequestParam(name = "token") String facebook_token, @RequestBody String att_name){
     Session actual_session = sessionRepository.findByToken(facebook_token);
@@ -395,7 +397,7 @@ public class IssueController {
   }
 
   //Coses del swagger
-  @ApiOperation(value = "watch an issue")
+  @ApiOperation(value = "Watch an issue")
   //End of swagger
   @PutMapping("{id}/watchs")
   Issue watchIssue(@PathVariable Long id, @RequestParam(name = "token") String facebook_token){
@@ -413,7 +415,7 @@ public class IssueController {
   }
 
   //Coses del swagger
-  @ApiOperation(value = "vote an issue")
+  @ApiOperation(value = "Vote an issue")
   //End of swagger
   @PutMapping("{id}/votes")
   Issue voteIssue(@PathVariable Long id, @RequestParam(name = "token") String facebook_token){
