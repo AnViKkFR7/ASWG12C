@@ -40,8 +40,6 @@ public class Issue {
 
   private int votes;
 
-  private int watchers;
-
   @NotNull
   private Date creationDate;
 
@@ -55,8 +53,7 @@ public class Issue {
   public Issue(){}
 
   public Issue (String title, String description, kindEnum kind,
-      priorityEnum priority, statusEnum status, int votes,
-      int watchers, Date creationDate, Date updatedDate, User creator){
+      priorityEnum priority, statusEnum status, Date creationDate, Date updatedDate, User creator){
     this.title = title;
     this.creationDate = creationDate;
     this.creator = creator;
@@ -65,8 +62,6 @@ public class Issue {
     this.status = status;
     this.updatedDate = updatedDate;
     this.description = description;
-    this.watchers = watchers;
-    this.votes = votes;
   }
 
   /**
@@ -114,22 +109,6 @@ public class Issue {
     this.status = status;
   }
 
-  public int getVotes() {
-    return votes;
-  }
-
-  public void setVotes(int votes) {
-    this.votes = votes;
-  }
-
-  public int getWatchers() {
-    return watchers;
-  }
-
-  public void setWatchers(int watchers) {
-    this.watchers = watchers;
-  }
-
   public Date getCreationDate() {
     return creationDate;
   }
@@ -162,4 +141,11 @@ public class Issue {
     this.id = id;
   }
 
+  public int getVotes() {
+    return votes;
+  }
+
+  public void setVotes(int votes) {
+    this.votes = votes;
+  }
 }

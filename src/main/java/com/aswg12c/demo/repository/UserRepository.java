@@ -10,4 +10,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 
   User findByFacebookId(String userId);
+
+  User findByFacebookToken(String facebook_token);
 }

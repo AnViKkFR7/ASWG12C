@@ -8,6 +8,8 @@ import com.aswg12c.demo.model.Issue;
 import com.aswg12c.demo.model.IssueDTO;
 import com.aswg12c.demo.model.Session;
 import com.aswg12c.demo.model.User;
+import com.aswg12c.demo.model.Vote;
+import com.aswg12c.demo.model.Watches;
 import com.aswg12c.demo.model.kindEnum;
 import com.aswg12c.demo.model.priorityEnum;
 import com.aswg12c.demo.model.sortEnum;
@@ -18,6 +20,8 @@ import com.aswg12c.demo.repository.IssueRepository;
 import com.aswg12c.demo.repository.SessionRepository;
 import com.aswg12c.demo.repository.UserRepository;
 
+import com.aswg12c.demo.repository.VotesRepository;
+import com.aswg12c.demo.repository.WatchesRepository;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
@@ -68,6 +72,12 @@ public class IssueController {
 
   @Autowired
   private AttachmentRepository attachmentRepository;
+
+  @Autowired
+  private VotesRepository votesRepository;
+
+  @Autowired
+  private WatchesRepository watchesRepository;
 
   @GetMapping("/{id}") //coger un issue con un id concreto
   //Coses del swagger
@@ -158,9 +168,13 @@ public class IssueController {
     if (!actual_session.getLoggedIn()) throw new GenericException(HttpStatus.FORBIDDEN, "You are not logged in");
 
     User actual_user = userRepository.findByFacebookId(actual_session.getUserId());
+
     Issue new_issue = new Issue(createNewIssue.getTitle(), createNewIssue.getDescription(), createNewIssue.getKind(),
-        createNewIssue.getPriority(), statusEnum.NEW, 1, 0, new Date(), new Date(), actual_user);
+        createNewIssue.getPriority(), statusEnum.NEW, new Date(), new Date(), actual_user);
+
+    Watches new_watch = new Watches(new_issue, actual_user);
     issueRepository.save(new_issue);
+    watchesRepository.save(new_watch);
     return new_issue;
   }
 
@@ -266,6 +280,10 @@ public class IssueController {
       List<Attachment> attachments_from_issue = attachmentRepository.findByIssue(actual_issue);
       for (Attachment next : attachments_from_issue) attachmentRepository.deleteById(next.getId());
 
+      votesRepository.deleteAllByIssue(actual_issue);
+      watchesRepository.deleteAllByIssue(actual_issue);
+
+
       issueRepository.deleteById(id);
     }
 
@@ -326,8 +344,10 @@ public class IssueController {
     Attachment new_attachment = new Attachment(attachment.getBytes(), attachment.getOriginalFilename(), actual_issue);
     attachmentRepository.save(new_attachment);
     actual_issue.setUpdatedDate(new Date());
-    actual_issue.setWatchers(actual_issue.getWatchers() + 1);
-    issueRepository.save(actual_issue);
+
+    User actual_user = userRepository.findByFacebookToken(facebook_token);
+    Watches new_watch = new Watches(actual_issue, actual_user);
+    watchesRepository.save(new_watch);
 
     //crear comentario automatico y guardarlo en la db
     String comment_content = "attached " + attachment.getOriginalFilename() + " \n" + comment;
@@ -381,7 +401,8 @@ public class IssueController {
         () -> new GenericException(HttpStatus.NOT_FOUND,
             ExceptionMessages.ID_NOT_FOUND.getErrorMessage()));
 
-    return actual_issue.getWatchers();
+    List<Watches> watches_from_issue = watchesRepository.findAllByIssue(actual_issue);
+    return watches_from_issue.size();
   }
 
   //Coses del swagger
@@ -393,13 +414,15 @@ public class IssueController {
         () -> new GenericException(HttpStatus.NOT_FOUND,
             ExceptionMessages.ID_NOT_FOUND.getErrorMessage()));
 
-    return actual_issue.getVotes();
+    List<Vote> votes_from_issue = votesRepository.findAllByIssue(actual_issue);
+
+    return votes_from_issue.size();
   }
 
   //Coses del swagger
   @ApiOperation(value = "Watch an issue")
   //End of swagger
-  @PutMapping("{id}/watchs")
+  @PutMapping("{id}/watch")
   Issue watchIssue(@PathVariable Long id, @RequestParam(name = "token") String facebook_token){
     Session actual_session = sessionRepository.findByToken(facebook_token);
     if (actual_session == null) throw new GenericException(HttpStatus.FORBIDDEN, "There is no session with that token");
@@ -409,15 +432,40 @@ public class IssueController {
         () -> new GenericException(HttpStatus.NOT_FOUND,
             ExceptionMessages.ID_NOT_FOUND.getErrorMessage()));
 
-    actual_issue.setWatchers(actual_issue.getWatchers() + 1);
-    issueRepository.save(actual_issue);
+    User actual_user = userRepository.findByFacebookToken(facebook_token);
+    if (!watchesRepository.existsByUserAndIssue(actual_user, actual_issue)){
+      Watches new_watch = new Watches(actual_issue, actual_user);
+      watchesRepository.save(new_watch);
+    }
+    else throw new GenericException(HttpStatus.BAD_REQUEST, "You are already watching this issue");
+    return actual_issue;
+  }
+
+  //Coses del swagger
+  @ApiOperation(value = "Unwatch an issue")
+  //End of swagger
+  @PutMapping("{id}/unwatch")
+  Issue unwatchIssue(@PathVariable Long id, @RequestParam(name = "token") String facebook_token){
+    Session actual_session = sessionRepository.findByToken(facebook_token);
+    if (actual_session == null) throw new GenericException(HttpStatus.FORBIDDEN, "There is no session with that token");
+    if (!actual_session.getLoggedIn()) throw new GenericException(HttpStatus.FORBIDDEN, "You are not logged in");
+
+    Issue actual_issue = issueRepository.findById(id).orElseThrow(
+        () -> new GenericException(HttpStatus.NOT_FOUND,
+            ExceptionMessages.ID_NOT_FOUND.getErrorMessage()));
+
+    User actual_user = userRepository.findByFacebookToken(facebook_token);
+    if (watchesRepository.existsByUserAndIssue(actual_user, actual_issue)){
+      watchesRepository.deleteByUserAndIssue(actual_user, actual_issue);
+    } else throw new GenericException(HttpStatus.BAD_REQUEST, "You are already watching this issue");
+
     return actual_issue;
   }
 
   //Coses del swagger
   @ApiOperation(value = "Vote an issue")
   //End of swagger
-  @PutMapping("{id}/votes")
+  @PutMapping("{id}/vote")
   Issue voteIssue(@PathVariable Long id, @RequestParam(name = "token") String facebook_token){
     Session actual_session = sessionRepository.findByToken(facebook_token);
     if (actual_session == null) throw new GenericException(HttpStatus.FORBIDDEN, "There is no session with that token");
@@ -427,9 +475,46 @@ public class IssueController {
         () -> new GenericException(HttpStatus.NOT_FOUND,
             ExceptionMessages.ID_NOT_FOUND.getErrorMessage()));
 
-    actual_issue.setVotes(actual_issue.getVotes() + 1);
-    actual_issue.setWatchers(actual_issue.getWatchers() + 1);
+    User actual_user = userRepository.findByFacebookToken(facebook_token);
+
+    if (!votesRepository.existsByUserAndIssue(actual_user, actual_issue)){
+      Vote new_vote = new Vote(actual_issue, actual_user);
+      votesRepository.save(new_vote);
+    }
+    else throw new GenericException(HttpStatus.BAD_REQUEST, "You have already voted this issue");
+
+    if (!watchesRepository.existsByUserAndIssue(actual_user, actual_issue)){
+      Watches new_watch = new Watches(actual_issue, actual_user);
+      watchesRepository.save(new_watch);
+    }
+    List<Vote> votes = votesRepository.findAll();
+    actual_issue.setVotes(votes.size());
     issueRepository.save(actual_issue);
+    return actual_issue;
+  }
+
+  //Coses del swagger
+  @ApiOperation(value = "Unvote an issue")
+  //End of swagger
+  @PutMapping("{id}/unvote")
+  Issue unvoteIssue(@PathVariable Long id, @RequestParam(name = "token") String facebook_token){
+    Session actual_session = sessionRepository.findByToken(facebook_token);
+    if (actual_session == null) throw new GenericException(HttpStatus.FORBIDDEN, "There is no session with that token");
+    if (!actual_session.getLoggedIn()) throw new GenericException(HttpStatus.FORBIDDEN, "You are not logged in");
+
+    Issue actual_issue = issueRepository.findById(id).orElseThrow(
+        () -> new GenericException(HttpStatus.NOT_FOUND,
+            ExceptionMessages.ID_NOT_FOUND.getErrorMessage()));
+
+    User actual_user = userRepository.findByFacebookToken(facebook_token);
+
+    if (!votesRepository.existsByUserAndIssue(actual_user, actual_issue)) throw new GenericException(HttpStatus.BAD_REQUEST, "You haven't voted this issue");
+    votesRepository.deleteByUserAndIssue(actual_user, actual_issue);
+
+    List<Vote> votes = votesRepository.findAll();
+    actual_issue.setVotes(votes.size());
+    issueRepository.save(actual_issue);
+
     return actual_issue;
   }
 
