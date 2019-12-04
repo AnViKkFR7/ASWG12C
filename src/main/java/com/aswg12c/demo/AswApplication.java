@@ -79,7 +79,7 @@ public class AswApplication extends WebSecurityConfigurerAdapter {
 		CreateUser();
 		return authentication;
 	}
-	
+
 	@RequestMapping("/logout")
 	public void logout() {
 		sessionRepository.deleteByUserId(userId);
