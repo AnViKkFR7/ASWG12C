@@ -15,6 +15,8 @@ import net.minidev.json.JSONObject;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import springfox.documentation.annotations.ApiIgnore;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -44,7 +46,8 @@ import java.util.LinkedHashMap;
 @EnableOAuth2Sso
 @RestController
 //Coses del swagger
-@Api(value = "Usuaris", description = "Session operations")
+@ApiIgnore
+//(value = "Usuaris", description = "Session operations")
 //End of swagger
 public class AswApplication extends WebSecurityConfigurerAdapter {
 
