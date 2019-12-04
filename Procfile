@@ -1,1 +1,1 @@
-web: java -jar target/my-rest-api.jar
+web: java -jar my-api.jar
