@@ -36,6 +36,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -368,7 +369,9 @@ public class IssueController {
     if (attachmentRepository.existsByNom(att_name)){
       Attachment actual_attachment = attachmentRepository.findByNom(att_name);
       byte[] imageBytes = actual_attachment.getAttachment();
-      return new ResponseEntity<>(imageBytes, HttpStatus.OK);
+      HttpHeaders responseHeader = new HttpHeaders();
+      responseHeader.set("content-disposition","attachment; filename=\"" + actual_attachment.getNom() +"\"");
+      return ResponseEntity.ok().headers(responseHeader).body(imageBytes);
     }
     else throw new GenericException(HttpStatus.NOT_FOUND, "Issue has no attachment");
   }
