@@ -1,1 +1,1 @@
-web: java -jar my-api.jar
+web: java -jar ./my-api.jar
