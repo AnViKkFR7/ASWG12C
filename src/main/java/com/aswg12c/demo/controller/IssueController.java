@@ -521,6 +521,21 @@ public class IssueController {
     return actual_issue;
   }
 
+
+  @ApiOperation(value = "Get all attachment names from an issue")
+  @GetMapping("{id}/attachments")
+  List<String> getAllAttachmentNamesFromIssue(@PathVariable Long id){
+    Issue actual_issue = issueRepository.findById(id)
+        .orElseThrow(() -> new GenericException(HttpStatus.NOT_FOUND, ExceptionMessages.ID_NOT_FOUND.getErrorMessage()));
+
+    List<Attachment> attachments = attachmentRepository.findByIssue(actual_issue);
+    List<String> att_names = new ArrayList<>();
+    for (Attachment att : attachments){
+      att_names.add(att.getNom());
+    }
+    return att_names;
+  }
+
   /**
    * Comparators
    */
