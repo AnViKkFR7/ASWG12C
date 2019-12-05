@@ -1,5 +1,6 @@
 package com.aswg12c.demo.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -29,6 +30,7 @@ public class User {
   @NotBlank
   private String facebookId;
 
+  @JsonIgnore
   @NotBlank
   private String facebookToken;
 
